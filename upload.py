@@ -27,6 +27,7 @@ def upload_files(files: Iterable[Path], bucket: str, prefix: str | None = None) 
     region = os.getenv("S3_REGION")
     access_key = os.getenv("S3_ACCESS_KEY")
     secret_key = os.getenv("S3_SECRET_KEY")
+    endpoint = os.getenv("S3_ENDPOINT") or os.getenv("S3_ENDPOINT_URL")
 
     client_kwargs: dict = {}
     if region:
@@ -34,6 +35,8 @@ def upload_files(files: Iterable[Path], bucket: str, prefix: str | None = None) 
     if access_key and secret_key:
         client_kwargs["aws_access_key_id"] = access_key
         client_kwargs["aws_secret_access_key"] = secret_key
+    if endpoint:
+        client_kwargs["endpoint_url"] = endpoint
 
     s3 = boto3.client("s3", **client_kwargs)
 
