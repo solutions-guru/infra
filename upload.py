@@ -5,7 +5,7 @@ from typing import Iterable
 from datetime import datetime
 
 
-def upload_files(files: Iterable[Path], bucket: str, prefix: str | None = None) -> None:
+def upload_files(files: Iterable[Path], bucket: str, prefix: str | None = None) -> list[Path]:
     """
     Upload the given files to S3 using boto3.
     - bucket: S3 bucket name (required)
@@ -76,6 +76,7 @@ def upload_files(files: Iterable[Path], bucket: str, prefix: str | None = None) 
         return "unknown-host"
 
     server = _server_id()
+    uploaded_files: list[Path] = []
 
     for path in files:
         p = Path(path)
@@ -99,5 +100,8 @@ def upload_files(files: Iterable[Path], bucket: str, prefix: str | None = None) 
         try:
             print(f"[upload] Uploading {p} to s3://{bucket}/{key} ...")
             s3.upload_file(str(p), bucket, key)
+            uploaded_files.append(p)
         except (BotoCoreError, ClientError) as e:
             raise RuntimeError(f"Failed to upload {p} to s3://{bucket}/{key}: {e}")
+    
+    return uploaded_files

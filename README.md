@@ -11,7 +11,7 @@ A Python-based backup solution that automatically backs up MySQL, PostgreSQL, an
 - **Organized Storage**: Backups are organized by server IP/hostname, database type, and date
 - **Secure**: Uses environment variables for all credentials; no hardcoded secrets
 - **Logging**: Creates detailed backup logs with timestamps and file information
-- **Automatic Cleanup**: Deletes local backup files after successful S3 upload
+- **Automatic Cleanup**: Automatically deletes local backup files only after successful S3 upload to save disk space
 - **Error Handling**: Gracefully handles missing tools and connection failures
 
 ## Prerequisites
@@ -218,6 +218,20 @@ The log includes:
 - UTC timestamp
 - S3 bucket and prefix
 - List of uploaded files with sizes and S3 keys
+
+## Automatic Cleanup
+
+The tool automatically deletes local backup files **only after successful upload to S3**. This behavior ensures:
+
+- **Disk space is freed** immediately after upload
+- **Backups are preserved** if upload fails (allowing retry)
+- **Only successfully uploaded files are deleted** (tracks upload status)
+
+**Important Notes:**
+- If S3 upload fails, local backup files are **preserved** so you can retry or investigate
+- Only files that were successfully uploaded to S3 are deleted
+- The log file is created before deletion, so you have a record of what was uploaded
+- If deletion fails for any file, a warning is printed but the process continues
 
 ## Database Discovery
 

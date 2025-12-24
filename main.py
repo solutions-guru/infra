@@ -59,9 +59,10 @@ def main() -> int:
 
     # Upload to S3
     try:
-        upload_files(created_files, bucket=bucket, prefix=prefix)
+        uploaded_files = upload_files(created_files, bucket=bucket, prefix=prefix)
     except Exception as e:
         print(f"[main] Upload to S3 failed: {e}")
+        print(f"[main] Local backup files preserved due to upload failure.")
         return 3
 
     # Prepare and write a log file before deleting local backups
@@ -127,16 +128,24 @@ def main() -> int:
 
 
     # Delete local backup files after successful upload and log creation
+    # Only delete files that were successfully uploaded to S3
     deleted = 0
-    for p in created_files:
+    failed_deletions = []
+    for p in uploaded_files:
         try:
             if p.exists():
                 p.unlink()
                 deleted += 1
                 print(f"[main] Deleted local backup file: {p}")
+            else:
+                print(f"[main] Backup file already removed: {p}")
         except Exception as e:
+            failed_deletions.append((p, str(e)))
             print(f"[main] Failed to delete {p}: {e}")
 
+    if failed_deletions:
+        print(f"[main] Warning: Failed to delete {len(failed_deletions)} local file(s). They may need manual cleanup.")
+    
     print(f"[main] Backup and upload completed successfully. Deleted {deleted} local file(s).")
     return 0
 
